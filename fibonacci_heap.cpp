@@ -50,22 +50,3 @@ class Fibonacci_heap{// Creating min pointer as "mini"
         cout << "min of heap is: " << mini->key << endl;
     }
 };
-
-// Driver code
-int main()
-{
-    Fibonacci_heap fibonacci_heap(7);
-
-    fibonacci_heap.insertion(4);
-    fibonacci_heap.insertion(3);
-    fibonacci_heap.insertion(7);
-    fibonacci_heap.insertion(5);
-    fibonacci_heap.insertion(2);
-    fibonacci_heap.insertion(1);
-    fibonacci_heap.insertion(10);
-
-    fibonacci_heap.find_min();
-
-
-    return 0;
-}
