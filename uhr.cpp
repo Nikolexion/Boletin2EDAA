@@ -137,6 +137,22 @@ std::vector<int> generar_vector_aleatorio(int n) {
     return v;
 }
 
+size_t estimar_espacio_heap(const std::string& tipo_heap, int num_elementos) {
+    if (tipo_heap == "binary") {
+        // Vector de enteros + overhead del vector
+        return num_elementos * sizeof(int) + sizeof(std::vector<int>) + sizeof(binary_heap<int>);
+    }
+    else if (tipo_heap == "binomial") {
+        // Cada nodo tiene punteros y un entero
+        return num_elementos * sizeof(Nodo) + sizeof(BinomialHeap) + sizeof(std::vector<Nodo*>);
+    }
+    else if (tipo_heap == "fibonacci") {
+        // Cada nodo de fibonacci
+        return num_elementos * sizeof(node) + sizeof(Fibonacci_heap);
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     // Validate and sanitize input
@@ -152,6 +168,7 @@ int main(int argc, char *argv[])
     std::vector<double> q;
     double mean_time, time_stdev, dev;
     double mean_time2, time_stdev2, dev2;
+    size_t mean_space;
     auto begin_time = std::chrono::high_resolution_clock::now();
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::nano> elapsed_time = end_time - begin_time;
@@ -168,13 +185,13 @@ int main(int argc, char *argv[])
     // File to write time data
     std::ofstream time_data;
     time_data.open(argv[1]);
-    time_data << "n,t_mean,t_stdev,t_mean2,t_stdev2,t_Q0,t_Q1,t_Q2,t_Q3,t_Q4" << std::endl;
+    time_data << "n,t_mean,t_stdev,t_mean2,t_stdev2,mean_space,t_Q0,t_Q1,t_Q2,t_Q3,t_Q4" << std::endl;
 
     // Begin testing
     std::cout << "\033[0;36mRunning tests...\033[0m" << std::endl << std::endl;
     executed_runs = 0;
 
-    int numeros[] = {1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000, 50000000};
+    int numeros[] = {1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000};
     for (n = lower; n <= upper; n += step) {
         int num = numeros[n-1];
         std::vector<int> datos = generar_vector_aleatorio(num);
@@ -185,7 +202,7 @@ int main(int argc, char *argv[])
         
         // Run to compute elapsed time
         for (i = 0; i < runs; i++) {
-            binary_heap<int> heap;
+            BinomialHeap heap;
             // Remember to change total depending on step type
             display_progress(++executed_runs, total_runs_additive);
 
@@ -198,10 +215,13 @@ int main(int argc, char *argv[])
             
             end_time = std::chrono::high_resolution_clock::now();
 
+            size_t space_used = estimar_espacio_heap("binomial", num);
+
             elapsed_time = end_time - begin_time;
             times[i] = elapsed_time.count();
 
             mean_time += times[i];
+            mean_space += space_used;
 
             begin_time2 = std::chrono::high_resolution_clock::now();
             // Function to test goes here
@@ -219,6 +239,7 @@ int main(int argc, char *argv[])
         // Compute statistics
         mean_time /= runs;
         mean_time2 /= runs;
+        mean_space /=runs;
 
         for (i = 0; i < runs; i++) {
             dev = times[i] - mean_time;
@@ -234,7 +255,7 @@ int main(int argc, char *argv[])
         quartiles(times, q);
 
         time_data << n << "," << mean_time << "," << time_stdev << ",";
-        time_data << mean_time2 << "," << time_stdev2 << ",";
+        time_data << mean_time2 << "," << time_stdev2 << "," << mean_space << ",";
         time_data << q[0] << "," << q[1] << "," << q[2] << "," << q[3] << "," << q[4] << std::endl;
     }
 

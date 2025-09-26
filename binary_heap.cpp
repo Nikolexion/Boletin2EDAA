@@ -1,4 +1,4 @@
-
+#include <stdexcept>
 #include<vector>
 #include<algorithm>
 
@@ -22,6 +22,7 @@ class binary_heap {
             data.pop_back();
             return minElement;
         }
+        throw std::out_of_range("Heap vacío");
     }
 
     void insert(const T& element){

@@ -29,7 +29,12 @@ class BinomialHeap {
     BinomialHeap(void){
     }
 
-    void insert_Nodo(Nodo* nuevo_nodo){
+    
+    void insert(int valor){
+        Nodo* nuevo_nodo = new Nodo(valor);
+        insert(nuevo_nodo);
+    }
+    void insert(Nodo* nuevo_nodo){
         int temp = 0;
         Nodo* raiz = nuevo_nodo; // raiz del sub binomial heap actual
         while(true){
@@ -46,5 +51,39 @@ class BinomialHeap {
                 temp++;
             }
         }
+    }
+
+    int extractMin() {
+        // Buscar el nodo raíz con el valor mínimo
+        int minIndex = -1;
+        int minValue = INT_MAX;
+        for (int i = 0; i < raices.size(); ++i) {
+            if (raices[i] && raices[i]->data < minValue) {
+                minValue = raices[i]->data;
+                minIndex = i;
+            }
+        }
+        if (minIndex == -1) throw std::out_of_range("Heap vacío");
+
+        Nodo* minNode = raices[minIndex];
+        raices[minIndex] = nullptr;
+
+        // Reinsertar los hijos del nodo mínimo como nuevos árboles
+        Nodo* child = minNode->hijo;
+        std::vector<Nodo*> children;
+        while (child) {
+            Nodo* siguiente = child->hermano;
+            child->padre = nullptr;
+            child->hermano = nullptr;
+            children.insert(children.begin(), child); // Insertar al inicio para mantener el orden
+            child = siguiente;
+        }
+        for (Nodo* c : children) {
+            insert(c);
+        }
+
+        int result = minNode->data;
+        delete minNode;
+        return result;
     }
 };
